@@ -10,6 +10,8 @@ import {
   Form,
   Input,
   Label,
+  Radio,
+  RadioGroup,
   TextField,
   toast,
 } from "@heroui/react";
@@ -30,6 +32,7 @@ const SignUpPage = () => {
     const name = formData.get("name");
     const email = formData.get("email");
     const password = formData.get("password");
+    const role = formData.get("role")
 
     setIsLoading(true);
 
@@ -38,6 +41,7 @@ const SignUpPage = () => {
         name,
         email,
         password,
+        role,
       });
 
       if (error) {
@@ -155,6 +159,33 @@ const SignUpPage = () => {
 
             <FieldError />
           </TextField>
+
+          {/* Role Selection */}
+          <div className="flex flex-col gap-4">
+            <Label>Subscription plan</Label>
+            <RadioGroup
+              defaultValue="seeker"
+              name="role"
+              orientation="horizontal"
+            >
+              <Radio value="seeker">
+                <Radio.Content >
+                  <Radio.Control>
+                    <Radio.Indicator />
+                  </Radio.Control>
+                  Job Seeker
+                </Radio.Content>
+              </Radio>
+              <Radio value="recruiter">
+                <Radio.Content>
+                  <Radio.Control>
+                    <Radio.Indicator />
+                  </Radio.Control>
+                  Recruiter
+                </Radio.Content>
+              </Radio>
+            </RadioGroup>
+          </div>
 
           {/* Submit */}
           <Button type="submit" isPending={isLoading} className="mt-2 w-full">
