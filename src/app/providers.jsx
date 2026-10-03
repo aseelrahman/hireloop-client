@@ -6,7 +6,7 @@ export function Providers({ children }) {
   return (
     <>
       <Toast.Provider />
-      {children};
+      {children}
     </>
   );
 }
