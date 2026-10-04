@@ -26,6 +26,7 @@ import {
   TextField,
   toast,
 } from "@heroui/react";
+import { createJobs } from "@/lib/actions/jobs";
 
 // Shared class strings and option lists (constants, not components)
 const labelClass = "mb-1.5 text-sm font-medium text-zinc-300";
@@ -122,12 +123,14 @@ export default function PostJobPage() {
       // });
       // if (!res.ok) throw new Error("Failed to create job");
 
-      console.log("Job Posted Successfully:", payload);
+      const res = await createJobs(payload);
 
-      toast.success("Job published", {
-        description: "Your listing is now live on HireLoop.",
-      });
-      router.push("/dashboard/recruiter/jobs");
+      if (res.insertedId) {
+        toast.success("Job published", {
+          description: "Your listing is now live on HireLoop.",
+        });
+        router.push("/dashboard/recruiter/jobs");
+      }
     } catch (err) {
       toast.danger("Failed to publish job", {
         description: err.message || "An unexpected error occurred.",
