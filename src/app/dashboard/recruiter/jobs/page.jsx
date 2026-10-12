@@ -1,10 +1,11 @@
 import JobsTable from "@/components/dashboard/JobsTable";
+import { getLoggedInRecruiterCompany } from "@/lib/api/companies";
 import { getCompanyJobs } from "@/lib/api/jobs";
 
 
 const RecruiterJobs = async () => {
-  const companyId = "company_123";
-  const jobs = (await getCompanyJobs(companyId)) || [];
+  const company = await getLoggedInRecruiterCompany();
+  const jobs = (await getCompanyJobs(company._id)) || [];
 
   // Client components only accept plain JSON — make sure ObjectIds become strings
   const serializedJobs = JSON.parse(JSON.stringify(jobs));
