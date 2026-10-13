@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Button,
   Description,
@@ -23,6 +23,9 @@ const SignUpPage = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect" || "/");
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -32,7 +35,7 @@ const SignUpPage = () => {
     const name = formData.get("name");
     const email = formData.get("email");
     const password = formData.get("password");
-    const role = formData.get("role")
+    const role = formData.get("role");
 
     setIsLoading(true);
 
@@ -56,7 +59,7 @@ const SignUpPage = () => {
         description: "Welcome! Your account is ready.",
       });
       form.reset();
-      //   e.currentTarget.reset();
+      router.push(redirectTo);
     } catch (error) {
       toast.danger("Something went wrong", {
         description: "Please try again later.",
@@ -169,7 +172,7 @@ const SignUpPage = () => {
               orientation="horizontal"
             >
               <Radio value="seeker">
-                <Radio.Content >
+                <Radio.Content>
                   <Radio.Control>
                     <Radio.Indicator />
                   </Radio.Control>
@@ -197,7 +200,7 @@ const SignUpPage = () => {
         <p className="mt-6 text-center text-sm text-default-500">
           Already have an account?{" "}
           <Link
-            href="/signin"
+            href={`/signin?redirect=${redirectTo}`}
             className="font-semibold text-accent hover:underline"
           >
             Sign in

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Button,
   FieldError,
@@ -19,6 +19,9 @@ import { authClient } from "@/lib/auth-client";
 const SignInPage = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,7 +55,7 @@ const SignInPage = () => {
       form.reset();
 
       // Redirect after successful sign in
-      router.push("/");
+      router.push(redirectTo);
     } catch (error) {
       toast.danger("Something went wrong", {
         description: "Please try again later.",
@@ -142,7 +145,7 @@ const SignInPage = () => {
         <p className="mt-6 text-center text-sm text-default-500">
           Don&apos;t have an account?{" "}
           <Link
-            href="/signup"
+            href={`/signup?redirect=${redirectTo}`}
             className="font-semibold text-accent hover:underline"
           >
             Create an account
