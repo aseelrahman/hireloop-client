@@ -186,7 +186,7 @@ export default async function JobDetailPage({ params }) {
               </div>
 
               <Link
-                href={`/apply/${job._id}`}
+                href={`/jobs/${id}/apply`}
                 className="w-full bg-white text-zinc-950 font-semibold py-3 rounded-2xl hover:bg-zinc-200 transition-colors text-center block shadow-md mt-4"
               >
                 Apply For This Role
