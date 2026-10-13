@@ -12,6 +12,7 @@ const PricingPage = () => {
     {
       name: "Free",
       price: "$0",
+      id: "seeker_free",
       period: "/forever",
       description: "Essential tools to kickstart your job hunt.",
       features: [
@@ -26,6 +27,7 @@ const PricingPage = () => {
     {
       name: "Pro",
       price: "$19",
+      id: "seeker_pro",
       period: "/month",
       description: "For active job seekers looking for an edge.",
       features: [
@@ -40,6 +42,7 @@ const PricingPage = () => {
     {
       name: "Premium",
       price: "$39",
+      id: "seeker_premium",
       period: "/month",
       description: "Maximum visibility and priority access.",
       features: [
@@ -58,6 +61,7 @@ const PricingPage = () => {
     {
       name: "Free",
       price: "$0",
+      id: "recruiter_free",
       period: "/forever",
       description: "Great for a company's first year of hiring.",
       features: [
@@ -71,6 +75,7 @@ const PricingPage = () => {
     {
       name: "Growth",
       price: "$49",
+      id: "recruiter_growth",
       period: "/month",
       description: "For growing teams scaling up hiring efforts.",
       features: [
@@ -85,6 +90,7 @@ const PricingPage = () => {
     {
       name: "Enterprise",
       price: "$149",
+      id: "recruiter_enterprise",
       period: "/month",
       description: "Advanced hiring suite for high-volume recruitment.",
       features: [
@@ -195,19 +201,24 @@ const PricingPage = () => {
             </div>
 
             <div className="mt-8">
-              <Button
-                as={Link}
-                href="/signup"
-                color={plan.popular ? "primary" : "default"}
-                variant={plan.popular ? "solid" : "bordered"}
-                className={`w-full flex items-center justify-center gap-2 transition-all active:scale-95 ${
-                  plan.popular
-                    ? "bg-accent text-white font-semibold"
-                    : "border-zinc-700 hover:border-accent text-white"
-                }`}
-              >
-                {plan.cta} <FaArrowRight className="text-xs" />
-              </Button>
+              <form action="/api/checkout_sessions" method="POST">
+                <input type="hidden" name="plan_id" value={plan.id} />
+                <section>
+                  <Button
+                    type="submit"
+                    role="link"
+                    color={plan.popular ? "primary" : "default"}
+                    variant={plan.popular ? "solid" : "bordered"}
+                    className={`w-full flex items-center justify-center gap-2 transition-all active:scale-95 ${
+                      plan.popular
+                        ? "bg-accent text-white font-semibold"
+                        : "border-zinc-700 hover:border-accent text-white"
+                    }`}
+                  >
+                    {plan.cta} <FaArrowRight className="text-xs" />
+                  </Button>
+                </section>
+              </form>
             </div>
           </div>
         ))}
