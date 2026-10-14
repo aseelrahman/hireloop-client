@@ -48,6 +48,7 @@ const JobApply = ({ applicant, job }) => {
       applicantName: applicant?.name,
       applicantEmail: applicant?.email,
       applicantId: applicant?.id,
+      status: "applied",
       ...formData,
     };
     console.log("Submitting application:", submissionData);
