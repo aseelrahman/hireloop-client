@@ -5,6 +5,7 @@ import JobApply from "./JobApply";
 import { getApplicationByApplicant } from "@/lib/api/applications";
 import Link from "next/link";
 import { FaExclamationCircle, FaArrowRight } from "react-icons/fa";
+import { getPlanById } from "@/lib/api/plans";
 
 const ApplyPage = async ({ params }) => {
   const { id } = await params;
@@ -25,13 +26,14 @@ const ApplyPage = async ({ params }) => {
   }
 
   const applications = await getApplicationByApplicant(user.id);
-  const plan = {
-    name: "Free",
-    maxApplicationsPerMonth: 3,
-  };
+
+  const plan = await getPlanById(user?.plan || 'seeker_free');
+  console.log(plan);
+ 
   const job = await getJobById(id);
 
-  const hasReachedLimit = applications.length >= plan.maxApplicationsPerMonth;
+  const applicationCount = applications?.length || 0;
+  const hasReachedLimit = applications.length >= plan.maxApplicationsPerMonth;  
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 flex flex-col gap-8">
@@ -42,7 +44,7 @@ const ApplyPage = async ({ params }) => {
             Monthly Quota ({plan.name} Plan)
           </span>
           <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-            You have applied to {applications.length} out of{" "}
+            You have applied to {applicationCount} out of{" "}
             {plan.maxApplicationsPerMonth} positions this month.
           </h2>
         </div>

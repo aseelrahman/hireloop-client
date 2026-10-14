@@ -26,7 +26,8 @@ export async function POST(request) {
             quantity: 1,
           },
         ],
-        mode: "subscription",
+          mode: "subscription",
+        metadata: {planId},
         success_url: `${origin}/plans/success?session_id={CHECKOUT_SESSION_ID}`,
         // Provide a name (for example, hosted_web_0001) to label this Checkout integration and measure its conversion independently
       });

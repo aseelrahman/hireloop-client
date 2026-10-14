@@ -39,12 +39,15 @@ const SignUpPage = () => {
 
     setIsLoading(true);
 
+    const plan = role === 'seeker' ? 'seeker_free' : 'recruiter_free';
+
     try {
       const { error } = await authClient.signUp.email({
         name,
         email,
         password,
         role,
+        plan,
       });
 
       if (error) {

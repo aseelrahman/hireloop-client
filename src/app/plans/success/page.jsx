@@ -9,6 +9,7 @@ import {
   HiOutlineShieldCheck,
   HiOutlineSparkles,
 } from "react-icons/hi";
+import { createSubscription } from "@/lib/actions/subscriptions";
 
 export default async function Success({ searchParams }) {
   const { session_id } = await searchParams;
@@ -17,18 +18,30 @@ export default async function Success({ searchParams }) {
     redirect("/plans");
   }
 
-  const session = await stripe.checkout.sessions.retrieve(session_id);
+  const {
+    status,
+    customer_details: { email: customerEmail, name: customerName },
+    metadata,
+  } = await stripe.checkout.sessions.retrieve(session_id, {
+    expand: ["line_items", "payment_intent"],
+  });
 
-  if (session.status === "open") {
+  if (status === "open") {
     redirect("/plans");
   }
 
-  if (session.status !== "complete") {
-    redirect("/plans");
+    if (status == "complete") {
+        const subsInfo = {
+            email: customerEmail,
+            planId: metadata.planId
+        }
+        
+        const result = await createSubscription(subsInfo);
+
+        console.log(result);
   }
 
-  const customerEmail = session.customer_details?.email;
-  const customerName = session.customer_details?.name;
+  // update the user table about the new plan
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#09090b] px-4 py-20 text-white">
