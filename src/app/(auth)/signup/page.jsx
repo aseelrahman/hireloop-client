@@ -24,7 +24,7 @@ const SignUpPage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect" || "/");
+  const redirectTo = searchParams.get("redirect") || "/";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,7 +39,7 @@ const SignUpPage = () => {
 
     setIsLoading(true);
 
-    const plan = role === 'seeker' ? 'seeker_free' : 'recruiter_free';
+    const plan = role === "seeker" ? "seeker_free" : "recruiter_free";
 
     try {
       const { error } = await authClient.signUp.email({
