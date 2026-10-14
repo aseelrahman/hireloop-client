@@ -9,23 +9,36 @@ import { HiOutlineMenuAlt3, HiOutlineX, HiOutlineLogout } from "react-icons/hi";
 
 import { authClient } from "@/lib/auth-client";
 
-const navLinks = [
-  { label: "Browse Jobs", href: "/jobs" },
-  { label: "Companies", href: "/companies" },
-  { label: "Pricing", href: "/plans" },
-];
 
 const Navbar = () => {
   const router = useRouter();
-
+  
   const [isOpen, setIsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
-
+  
   const { data: session, isPending } = authClient.useSession();
-
+  const user = session?.user;
+  
   const firstName = session?.user?.name?.split(" ")[0];
   const firstInitial = firstName?.charAt(0).toUpperCase();
+  
+  const navLinks = [
+    { label: "Browse Jobs", href: "/jobs" },
+    { label: "Companies", href: "/companies" },
+    { label: "Pricing", href: "/plans" },
+  ];
 
+  const dashboardLinks = {
+    seeker: "/dashboard/seeker/",
+    recruiter: "/dashboard/recruiter/",
+  };
+
+  if (user?.email) {
+    navLinks.push({
+      label: "Dashboard",
+      href: dashboardLinks[user?.role || 'seeker'],
+    });
+  }
   const closeMenu = () => {
     setIsOpen(false);
   };
