@@ -17,11 +17,14 @@ import {
   HiOutlineDocumentText,
   HiOutlineCreditCard,
   HiOutlineCog6Tooth,
+  HiOutlineBanknotes,
+  HiOutlineUsers,
+  HiOutlineBuildingOffice2,
+  HiOutlineBriefcase,
 } from "react-icons/hi2";
 import { getUserSession } from "@/lib/core/session";
 
 export async function DashboardSidebar() {
-
   const user = await getUserSession();
   const recruiterNavLinks = [
     { icon: House, href: "/dashboard/recruiter", label: "Home" },
@@ -78,12 +81,46 @@ export async function DashboardSidebar() {
     },
   ];
 
+  const adminNavLinks = [
+    {
+      icon: HiOutlineSquares2X2,
+      href: "/dashboard/admin",
+      label: "Dashboard",
+    },
+    {
+      icon: HiOutlineUsers,
+      href: "/dashboard/admin/users",
+      label: "Users",
+    },
+    {
+      icon: HiOutlineBuildingOffice2,
+      href: "/dashboard/admin/companies",
+      label: "Companies",
+    },
+    {
+      icon: HiOutlineBriefcase,
+      href: "/dashboard/admin/jobs",
+      label: "Jobs",
+    },
+    {
+      icon: HiOutlineBanknotes,
+      href: "/dashboard/admin/payments",
+      label: "Payments",
+    },
+    {
+      icon: HiOutlineCog6Tooth,
+      href: "/dashboard/admin/settings",
+      label: "Settings",
+    },
+  ];
+
   const navLinksMap = {
     seeker: seekerNavLinks,
     recruiter: recruiterNavLinks,
-  }
+    admin: adminNavLinks,
+  };
 
-  const navItems = navLinksMap[user?.role || 'seeker']
+  const navItems = navLinksMap[user?.role || "seeker"];
 
   const navContent = (
     <nav className="flex flex-col gap-1">
