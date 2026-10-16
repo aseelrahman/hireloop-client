@@ -135,7 +135,7 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
         employeeCount: formData.get("employeeCount"),
         description: formData.get("description"),
         logoUrl: logoUrl,
-        status: company?.status || "Pending",
+        status: company && company?.status ? company.status : "Pending",
         recruiterId: recruiter.id,
       };
 
@@ -144,9 +144,10 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
       const payload = await createCompany(newCompanyData);
       if (payload.insertedId) {
         toast.success("Company profile created successfully!");
+        const savedCompany = { ...newCompanyData, _id: payload.insertedId };
+        setCompany(savedCompany);
       }
 
-      setCompany(newCompanyData);
       setShowForm(false);
     } catch (err) {
       console.error("Failed to save company details:", err);
