@@ -62,24 +62,15 @@ const CURRENCIES = [
 ];
 
 export default function PostJobForm({ company }) {
-  console.log("Company info", company);
-
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [isRemote, setIsRemote] = useState(false);
 
-  // Mock company state. Load from your session/API in a real app.
-  // const [companyInfo] = useState({
-  //   id: "company_123",
-  //   name: "Acme Corp",
-  //   isApproved: true,
-  // });
-
-  // const canPost = company.isApproved;
+ const isApproved = company?.status?.toLowerCase() === "approved";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // if (!canPost) return;
+    if (!isApproved) return;
 
     // Read every named field from the form
     const data = Object.fromEntries(new FormData(e.currentTarget));
@@ -119,13 +110,6 @@ export default function PostJobForm({ company }) {
     };
 
     try {
-      // const res = await fetch("/api/jobs", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(payload),
-      // });
-      // if (!res.ok) throw new Error("Failed to create job");
-
       const res = await createJobs(payload);
 
       if (res.insertedId) {
@@ -180,20 +164,21 @@ export default function PostJobForm({ company }) {
                 <h3 className="text-base font-medium text-white">
                   {company.name}
                 </h3>
-                {company.isApproved ? (
+                {isApproved ? (
                   <span className="inline-flex items-center gap-1 rounded-full border border-emerald-800/40 bg-emerald-950/40 px-2 py-0.5 text-xs text-emerald-400">
                     <FiCheckCircle className="h-3 w-3" /> Approved
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 rounded-full border border-amber-800/40 bg-amber-950/40 px-2 py-0.5 text-xs text-amber-400">
-                    <FiAlertTriangle className="h-3 w-3" /> Pending Approval
+                    <FiAlertTriangle className="h-3 w-3" />{" "}
+                    {company.status || "Pending Approval"}
                   </span>
                 )}
               </div>
             </div>
           </div>
 
-          {!company.isApproved && (
+          {!isApproved && (
             <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3.5 text-sm text-amber-300">
               <FiInfo className="h-5 w-5 shrink-0" />
               <span>
@@ -204,265 +189,265 @@ export default function PostJobForm({ company }) {
           )}
         </div>
 
-        {/* Main form: `inert` disables the whole form until the company is approved */}
-        <Form
-          onSubmit={handleSubmit}
-          // inert={!canPost}
-          className={`space-y-10 p-6 sm:p-8 `}
-          // ${!canPost ? "opacity-50" : ""}
-        >
-          {/* SECTION 1: Job info */}
-          <fieldset className="w-full space-y-6">
-            <legend className="mb-2 text-lg font-medium text-white">
-              Job Info
-            </legend>
+        {/* Main form: disabled via inert when company is not approved */}
+        {isApproved && (
+          <Form
+            onSubmit={handleSubmit}
+            className={`space-y-10 p-6 sm:p-8`}
+          >
+            {/* SECTION 1: Job info */}
+            <fieldset className="w-full space-y-6">
+              <legend className="mb-2 text-lg font-medium text-white">
+                Job Info
+              </legend>
 
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              {/* Job title */}
-              <TextField
-                isRequired
-                name="title"
-                validate={(value) =>
-                  value.trim().length < 3
-                    ? "Title must be at least 3 characters"
-                    : null
-                }
-              >
-                <Label className={labelClass}>Job Title</Label>
-                <Input
-                  placeholder="e.g. Senior Frontend Developer"
-                  className={inputClass}
-                />
-                <FieldError />
-              </TextField>
-
-              {/* Category */}
-              <Select
-                isRequired
-                name="category"
-                placeholder="Select a category"
-              >
-                <Label className={labelClass}>Job Category</Label>
-                <Select.Trigger className={triggerClass}>
-                  <Select.Value />
-                  <Select.Indicator />
-                </Select.Trigger>
-                <Select.Popover className={popoverClass}>
-                  <ListBox>
-                    {CATEGORIES.map((o) => (
-                      <ListBox.Item
-                        key={o.value}
-                        id={o.value}
-                        textValue={o.label}
-                      >
-                        {o.label}
-                        <ListBox.ItemIndicator />
-                      </ListBox.Item>
-                    ))}
-                  </ListBox>
-                </Select.Popover>
-                <FieldError />
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              {/* Job type */}
-              <Select isRequired name="jobType" defaultValue="full-time">
-                <Label className={labelClass}>Job Type</Label>
-                <Select.Trigger className={triggerClass}>
-                  <Select.Value />
-                  <Select.Indicator />
-                </Select.Trigger>
-                <Select.Popover className={popoverClass}>
-                  <ListBox>
-                    {JOB_TYPES.map((o) => (
-                      <ListBox.Item
-                        key={o.value}
-                        id={o.value}
-                        textValue={o.label}
-                      >
-                        {o.label}
-                        <ListBox.ItemIndicator />
-                      </ListBox.Item>
-                    ))}
-                  </ListBox>
-                </Select.Popover>
-                <FieldError />
-              </Select>
-
-              {/* Deadline */}
-              <TextField
-                isRequired
-                name="deadline"
-                type="date"
-                validate={(value) =>
-                  value < new Date().toISOString().slice(0, 10)
-                    ? "Deadline can't be in the past"
-                    : null
-                }
-              >
-                <Label className={labelClass}>Application Deadline</Label>
-                <div className="relative">
-                  <FiCalendar className={iconClass} />
-                  <Input className={`${inputClass} pl-9`} />
-                </div>
-                <Description className={hintClass}>
-                  Last day candidates can apply.
-                </Description>
-                <FieldError />
-              </TextField>
-            </div>
-
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-              {/* Min salary */}
-              <TextField
-                isRequired
-                name="salaryMin"
-                type="number"
-                validate={(value) =>
-                  Number(value) <= 0 ? "Enter a positive amount" : null
-                }
-              >
-                <Label className={labelClass}>Min Salary</Label>
-                <div className="relative">
-                  <FiDollarSign className={iconClass} />
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                {/* Job title */}
+                <TextField
+                  isRequired
+                  name="title"
+                  validate={(value) =>
+                    value.trim().length < 3
+                      ? "Title must be at least 3 characters"
+                      : null
+                  }
+                >
+                  <Label className={labelClass}>Job Title</Label>
                   <Input
-                    placeholder="e.g. 80000"
-                    className={`${inputClass} pl-9`}
+                    placeholder="e.g. Senior Frontend Developer"
+                    className={inputClass}
                   />
-                </div>
-                <FieldError />
-              </TextField>
+                  <FieldError />
+                </TextField>
 
-              {/* Max salary */}
-              <TextField
-                isRequired
-                name="salaryMax"
-                type="number"
-                validate={(value) =>
-                  Number(value) <= 0 ? "Enter a positive amount" : null
-                }
-              >
-                <Label className={labelClass}>Max Salary</Label>
-                <div className="relative">
-                  <FiDollarSign className={iconClass} />
-                  <Input
-                    placeholder="e.g. 120000"
-                    className={`${inputClass} pl-9`}
-                  />
-                </div>
-                <FieldError />
-              </TextField>
-
-              {/* Currency */}
-              <Select isRequired name="currency" defaultValue="USD">
-                <Label className={labelClass}>Currency</Label>
-                <Select.Trigger className={triggerClass}>
-                  <Select.Value />
-                  <Select.Indicator />
-                </Select.Trigger>
-                <Select.Popover className={popoverClass}>
-                  <ListBox>
-                    {CURRENCIES.map((o) => (
-                      <ListBox.Item
-                        key={o.value}
-                        id={o.value}
-                        textValue={o.label}
-                      >
-                        {o.label}
-                        <ListBox.ItemIndicator />
-                      </ListBox.Item>
-                    ))}
-                  </ListBox>
-                </Select.Popover>
-                <FieldError />
-              </Select>
-            </div>
-
-            {/* Location + remote toggle */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className={labelClass}>Location</span>
-
-                <Switch isSelected={isRemote} onChange={setIsRemote}>
-                  <Switch.Content>
-                    <Switch.Control>
-                      <Switch.Thumb />
-                    </Switch.Control>
-                    <span className="text-xs font-medium text-zinc-400">
-                      Remote Position
-                    </span>
-                  </Switch.Content>
-                </Switch>
+                {/* Category */}
+                <Select
+                  isRequired
+                  name="category"
+                  placeholder="Select a category"
+                >
+                  <Label className={labelClass}>Job Category</Label>
+                  <Select.Trigger className={triggerClass}>
+                    <Select.Value />
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  <Select.Popover className={popoverClass}>
+                    <ListBox>
+                      {CATEGORIES.map((o) => (
+                        <ListBox.Item
+                          key={o.value}
+                          id={o.value}
+                          textValue={o.label}
+                        >
+                          {o.label}
+                          <ListBox.ItemIndicator />
+                        </ListBox.Item>
+                      ))}
+                    </ListBox>
+                  </Select.Popover>
+                  <FieldError />
+                </Select>
               </div>
 
-              {!isRemote && (
-                <TextField isRequired name="location" aria-label="Location">
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                {/* Job type */}
+                <Select isRequired name="jobType" defaultValue="full-time">
+                  <Label className={labelClass}>Job Type</Label>
+                  <Select.Trigger className={triggerClass}>
+                    <Select.Value />
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  <Select.Popover className={popoverClass}>
+                    <ListBox>
+                      {JOB_TYPES.map((o) => (
+                        <ListBox.Item
+                          key={o.value}
+                          id={o.value}
+                          textValue={o.label}
+                        >
+                          {o.label}
+                          <ListBox.ItemIndicator />
+                        </ListBox.Item>
+                      ))}
+                    </ListBox>
+                  </Select.Popover>
+                  <FieldError />
+                </Select>
+
+                {/* Deadline */}
+                <TextField
+                  isRequired
+                  name="deadline"
+                  type="date"
+                  validate={(value) =>
+                    value < new Date().toISOString().slice(0, 10)
+                      ? "Deadline can't be in the past"
+                      : null
+                  }
+                >
+                  <Label className={labelClass}>Application Deadline</Label>
                   <div className="relative">
-                    <FiMapPin className={iconClass} />
+                    <FiCalendar className={iconClass} />
+                    <Input className={`${inputClass} pl-9`} />
+                  </div>
+                  <Description className={hintClass}>
+                    Last day candidates can apply.
+                  </Description>
+                  <FieldError />
+                </TextField>
+              </div>
+
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+                {/* Min salary */}
+                <TextField
+                  isRequired
+                  name="salaryMin"
+                  type="number"
+                  validate={(value) =>
+                    Number(value) <= 0 ? "Enter a positive amount" : null
+                  }
+                >
+                  <Label className={labelClass}>Min Salary</Label>
+                  <div className="relative">
+                    <FiDollarSign className={iconClass} />
                     <Input
-                      placeholder="City, Country (e.g. San Francisco, USA)"
+                      placeholder="e.g. 80000"
                       className={`${inputClass} pl-9`}
                     />
                   </div>
                   <FieldError />
                 </TextField>
-              )}
+
+                {/* Max salary */}
+                <TextField
+                  isRequired
+                  name="salaryMax"
+                  type="number"
+                  validate={(value) =>
+                    Number(value) <= 0 ? "Enter a positive amount" : null
+                  }
+                >
+                  <Label className={labelClass}>Max Salary</Label>
+                  <div className="relative">
+                    <FiDollarSign className={iconClass} />
+                    <Input
+                      placeholder="e.g. 120000"
+                      className={`${inputClass} pl-9`}
+                    />
+                  </div>
+                  <FieldError />
+                </TextField>
+
+                {/* Currency */}
+                <Select isRequired name="currency" defaultValue="USD">
+                  <Label className={labelClass}>Currency</Label>
+                  <Select.Trigger className={triggerClass}>
+                    <Select.Value />
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  <Select.Popover className={popoverClass}>
+                    <ListBox>
+                      {CURRENCIES.map((o) => (
+                        <ListBox.Item
+                          key={o.value}
+                          id={o.value}
+                          textValue={o.label}
+                        >
+                          {o.label}
+                          <ListBox.ItemIndicator />
+                        </ListBox.Item>
+                      ))}
+                    </ListBox>
+                  </Select.Popover>
+                  <FieldError />
+                </Select>
+              </div>
+
+              {/* Location + remote toggle */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className={labelClass}>Location</span>
+
+                  <Switch isSelected={isRemote} onChange={setIsRemote}>
+                    <Switch.Content>
+                      <Switch.Control>
+                        <Switch.Thumb />
+                      </Switch.Control>
+                      <span className="text-xs font-medium text-zinc-400">
+                        Remote Position
+                      </span>
+                    </Switch.Content>
+                  </Switch>
+                </div>
+
+                {!isRemote && (
+                  <TextField isRequired name="location" aria-label="Location">
+                    <div className="relative">
+                      <FiMapPin className={iconClass} />
+                      <Input
+                        placeholder="City, Country (e.g. San Francisco, USA)"
+                        className={`${inputClass} pl-9`}
+                      />
+                    </div>
+                    <FieldError />
+                  </TextField>
+                )}
+              </div>
+            </fieldset>
+
+            <hr className="w-full border-zinc-800" />
+
+            {/* SECTION 2: Job description */}
+            <fieldset className="w-full space-y-6">
+              <legend className="mb-2 text-lg font-medium text-white">
+                Job Description
+              </legend>
+
+              <TextField isRequired name="responsibilities">
+                <Label className={labelClass}>Responsibilities</Label>
+                <TextArea
+                  rows={4}
+                  placeholder="List core duties and day-to-day responsibilities..."
+                  className={inputClass}
+                />
+                <FieldError />
+              </TextField>
+
+              <TextField isRequired name="requirements">
+                <Label className={labelClass}>Requirements</Label>
+                <TextArea
+                  rows={4}
+                  placeholder="List required skills, experience level, and qualifications..."
+                  className={inputClass}
+                />
+                <FieldError />
+              </TextField>
+
+              <TextField name="benefits">
+                <Label className={labelClass}>Benefits (Optional)</Label>
+                <TextArea
+                  rows={3}
+                  placeholder="e.g. Health insurance, 401(k) matching, flexible hours, learning budget..."
+                  className={inputClass}
+                />
+              </TextField>
+            </fieldset>
+
+            {/* Footer actions */}
+            <div className="flex w-full items-center justify-end gap-3 border-t border-zinc-800 pt-6">
+              <Button
+                type="button"
+                variant="danger-soft"
+                onPress={() => router.back()}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" isPending={loading}>
+                Publish Job Posting
+              </Button>
             </div>
-          </fieldset>
-
-          <hr className="w-full border-zinc-800" />
-
-          {/* SECTION 2: Job description */}
-          <fieldset className="w-full space-y-6">
-            <legend className="mb-2 text-lg font-medium text-white">
-              Job Description
-            </legend>
-
-            <TextField isRequired name="responsibilities">
-              <Label className={labelClass}>Responsibilities</Label>
-              <TextArea
-                rows={4}
-                placeholder="List core duties and day-to-day responsibilities..."
-                className={inputClass}
-              />
-              <FieldError />
-            </TextField>
-
-            <TextField isRequired name="requirements">
-              <Label className={labelClass}>Requirements</Label>
-              <TextArea
-                rows={4}
-                placeholder="List required skills, experience level, and qualifications..."
-                className={inputClass}
-              />
-              <FieldError />
-            </TextField>
-
-            <TextField name="benefits">
-              <Label className={labelClass}>Benefits (Optional)</Label>
-              <TextArea
-                rows={3}
-                placeholder="e.g. Health insurance, 401(k) matching, flexible hours, learning budget..."
-                className={inputClass}
-              />
-            </TextField>
-          </fieldset>
-
-          {/* Footer actions */}
-          <div className="flex w-full items-center justify-end gap-3 border-t border-zinc-800 pt-6">
-            <Button
-              type="button"
-              variant="danger-soft"
-              onPress={() => router.back()}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" isPending={loading}>
-              Publish Job Posting
-            </Button>
-          </div>
-        </Form>
+          </Form>
+        )}
       </div>
     </div>
   );
