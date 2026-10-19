@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import JobFilters from "@/components/jobs/JobFilters";
 import JobCard from "@/components/jobs/JobCard";
+import { useRouter } from "next/navigation";
 
 // "Data Analytics", "data_analytics", "Data-Analytics" -> "data-analytics"
 const normalize = (value) =>
@@ -19,34 +20,58 @@ const toKey = (value) => {
   return value ? normalize(value) : "all";
 };
 
-export default function JobListingContainer({ initialJobs = [] }) {
+export default function JobListingContainer({ jobs = [] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
   const [isRemoteOnly, setIsRemoteOnly] = useState(false);
 
-  const filteredJobs = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    const categoryKey = toKey(selectedCategory);
-    const typeKey = toKey(selectedType);
+  const router = useRouter();
 
-    return initialJobs.filter((job) => {
-      const matchesSearch =
-        !query ||
-        job.title?.toLowerCase().includes(query) ||
-        job.company?.toLowerCase().includes(query) ||
-        job.location?.toLowerCase().includes(query);
+  useEffect(() => {
+    const sp = new URLSearchParams();
 
-      const matchesCategory =
-        categoryKey === "all" || normalize(job.category) === categoryKey;
+    if (searchQuery) {
+      sp.set("search", searchQuery);
+    }
 
-      const matchesType = typeKey === "all" || normalize(job.type) === typeKey;
+    if (selectedCategory !== "all") {
+      sp.set("category", selectedCategory);
+    }
+    if (selectedType !== "all") {
+      sp.set("type", selectedType);
+    }
+    if (isRemoteOnly) {
+      sp.set("isRemote", true);
+    }
 
-      const matchesRemote = !isRemoteOnly || job.isRemote === true;
+    console.log("search params", sp.toString());
+    const path = `?${sp.toString()}`;
+    router.push(path);
+  }, [router, selectedType, selectedCategory, isRemoteOnly, searchQuery]);
 
-      return matchesSearch && matchesCategory && matchesType && matchesRemote;
-    });
-  }, [searchQuery, selectedCategory, selectedType, isRemoteOnly, initialJobs]);
+  // const jobs = useMemo(() => {
+  //   const query = searchQuery.trim().toLowerCase();
+  //   const categoryKey = toKey(selectedCategory);
+  //   const typeKey = toKey(selectedType);
+
+  //   return jobs.filter((job) => {
+  //     const matchesSearch =
+  //       !query ||
+  //       job.title?.toLowerCase().includes(query) ||
+  //       job.company?.toLowerCase().includes(query) ||
+  //       job.location?.toLowerCase().includes(query);
+
+  //     const matchesCategory =
+  //       categoryKey === "all" || normalize(job.category) === categoryKey;
+
+  //     const matchesType = typeKey === "all" || normalize(job.type) === typeKey;
+
+  //     const matchesRemote = !isRemoteOnly || job.isRemote === true;
+
+  //     return matchesSearch && matchesCategory && matchesType && matchesRemote;
+  //   });
+  // }, [searchQuery, selectedCategory, selectedType, isRemoteOnly, jobs]);
 
   return (
     <>
@@ -61,9 +86,9 @@ export default function JobListingContainer({ initialJobs = [] }) {
         onRemoteChange={setIsRemoteOnly}
       />
 
-      {filteredJobs.length > 0 ? (
+      {jobs.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredJobs.map((job) => (
+          {jobs.map((job) => (
             <JobCard key={job._id} job={job} />
           ))}
         </div>

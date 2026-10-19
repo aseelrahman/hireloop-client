@@ -3,7 +3,7 @@ import { getJobs } from "@/lib/api/jobs";
 import JobListingContainer from "@/components/jobs/JobListingContainer";
 
 export default async function JobsPage() {
-  const jobsList = await getJobs();
+  const jobs = await getJobs();
 
   return (
     <main className="min-h-screen bg-zinc-950 p-8 md:p-12">
@@ -19,7 +19,7 @@ export default async function JobsPage() {
         </div>
 
         {/* Client Wrapper Component handling state and rendering */}
-        <JobListingContainer initialJobs={jobsList} />
+        <JobListingContainer jobs={jobs} />
       </div>
     </main>
   );
