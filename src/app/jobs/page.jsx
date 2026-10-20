@@ -2,8 +2,17 @@ import React from "react";
 import { getJobs } from "@/lib/api/jobs";
 import JobListingContainer from "@/components/jobs/JobListingContainer";
 
-export default async function JobsPage() {
-  const jobs = await getJobs();
+export default async function JobsPage({ searchParams }) {
+  const filters = await searchParams;
+  const filtersObj = {
+    ...filters,
+    isRemote: filters?.isRemote === "true",
+  };
+
+  const querySearch = new URLSearchParams(filters);
+  const queryString = querySearch.toString();
+  console.log("serch query: ", filters, queryString);
+  const { jobs, total } = await getJobs(queryString);
 
   return (
     <main className="min-h-screen bg-zinc-950 p-8 md:p-12">
@@ -19,7 +28,7 @@ export default async function JobsPage() {
         </div>
 
         {/* Client Wrapper Component handling state and rendering */}
-        <JobListingContainer jobs={jobs} />
+        <JobListingContainer filters={filtersObj} jobs={jobs} total={total} />
       </div>
     </main>
   );

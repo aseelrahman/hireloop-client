@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import JobFilters from "@/components/jobs/JobFilters";
 import JobCard from "@/components/jobs/JobCard";
 import { useRouter } from "next/navigation";
+import { Pagination } from "@heroui/react";
 
 // "Data Analytics", "data_analytics", "Data-Analytics" -> "data-analytics"
 const normalize = (value) =>
@@ -20,13 +21,42 @@ const toKey = (value) => {
   return value ? normalize(value) : "all";
 };
 
-export default function JobListingContainer({ jobs = [] }) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedType, setSelectedType] = useState("all");
-  const [isRemoteOnly, setIsRemoteOnly] = useState(false);
+export default function JobListingContainer({ jobs = [], filters, total }) {
+  const [searchQuery, setSearchQuery] = useState(filters?.search);
+  const [selectedCategory, setSelectedCategory] = useState(
+    filters?.category || "all",
+  );
+  const [selectedType, setSelectedType] = useState(filters?.type || "all");
+  const [isRemoteOnly, setIsRemoteOnly] = useState(filters?.isRemote || false);
+  const [page, setPage] = useState(Number(filters?.page) || 1);
 
   const router = useRouter();
+
+  const totalItems = total;
+  const itemsPerPage = 12;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    pages.push(1);
+    if (page > 3) {
+      pages.push("ellipsis");
+    }
+    const start = Math.max(2, page - 1);
+    const end = Math.min(totalPages - 1, page + 1);
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    if (page < totalPages - 2) {
+      pages.push("ellipsis");
+    }
+    pages.push(totalPages);
+    return pages;
+  };
+
+  const startItem = (page - 1) * itemsPerPage + 1;
+  const endItem = (page - 1) * itemsPerPage + jobs.length;
+  // const endItem2 = Math.min(page * itemsPerPage, totalItems);
 
   useEffect(() => {
     const sp = new URLSearchParams();
@@ -44,34 +74,14 @@ export default function JobListingContainer({ jobs = [] }) {
     if (isRemoteOnly) {
       sp.set("isRemote", true);
     }
+    if (page) {
+      sp.set("page", page);
+    }
 
     console.log("search params", sp.toString());
     const path = `?${sp.toString()}`;
     router.push(path);
-  }, [router, selectedType, selectedCategory, isRemoteOnly, searchQuery]);
-
-  // const jobs = useMemo(() => {
-  //   const query = searchQuery.trim().toLowerCase();
-  //   const categoryKey = toKey(selectedCategory);
-  //   const typeKey = toKey(selectedType);
-
-  //   return jobs.filter((job) => {
-  //     const matchesSearch =
-  //       !query ||
-  //       job.title?.toLowerCase().includes(query) ||
-  //       job.company?.toLowerCase().includes(query) ||
-  //       job.location?.toLowerCase().includes(query);
-
-  //     const matchesCategory =
-  //       categoryKey === "all" || normalize(job.category) === categoryKey;
-
-  //     const matchesType = typeKey === "all" || normalize(job.type) === typeKey;
-
-  //     const matchesRemote = !isRemoteOnly || job.isRemote === true;
-
-  //     return matchesSearch && matchesCategory && matchesType && matchesRemote;
-  //   });
-  // }, [searchQuery, selectedCategory, selectedType, isRemoteOnly, jobs]);
+  }, [router, selectedType, selectedCategory, isRemoteOnly, searchQuery, page]);
 
   return (
     <>
@@ -87,11 +97,56 @@ export default function JobListingContainer({ jobs = [] }) {
       />
 
       {jobs.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {jobs.map((job) => (
-            <JobCard key={job._id} job={job} />
-          ))}
-        </div>
+        <>
+          <p className="my-5">Total jobs: {jobs.length}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {jobs.map((job) => (
+              <JobCard key={job._id} job={job} />
+            ))}
+          </div>
+
+          <Pagination className="w-full">
+            <Pagination.Summary>
+              Showing {startItem}-{endItem} of {totalItems} results
+            </Pagination.Summary>
+            <Pagination.Content>
+              <Pagination.Item>
+                <Pagination.Previous
+                  isDisabled={page === 1}
+                  onPress={() => setPage((p) => p - 1)}
+                >
+                  <Pagination.PreviousIcon />
+                  <span>Previous</span>
+                </Pagination.Previous>
+              </Pagination.Item>
+              {getPageNumbers().map((p, i) =>
+                p === "ellipsis" ? (
+                  <Pagination.Item key={`ellipsis-${i}`}>
+                    <Pagination.Ellipsis />
+                  </Pagination.Item>
+                ) : (
+                  <Pagination.Item key={p}>
+                    <Pagination.Link
+                      isActive={p === page}
+                      onPress={() => setPage(p)}
+                    >
+                      {p}
+                    </Pagination.Link>
+                  </Pagination.Item>
+                ),
+              )}
+              <Pagination.Item>
+                <Pagination.Next
+                  isDisabled={page === totalPages}
+                  onPress={() => setPage((p) => p + 1)}
+                >
+                  <span>Next</span>
+                  <Pagination.NextIcon />
+                </Pagination.Next>
+              </Pagination.Item>
+            </Pagination.Content>
+          </Pagination>
+        </>
       ) : (
         <div className="text-center py-16 text-zinc-500 rounded-3xl border border-zinc-800">
           No matching jobs found. Try adjusting your search query or filters.
